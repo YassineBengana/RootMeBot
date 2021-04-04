@@ -74,6 +74,11 @@ class RootMeBot:
             """ (<username>) """
             await disp.today(self.db, context)
 
+        @self.bot.command(description='Return all challenges solved by a specific user.')
+        async def solved_by(context: commands.context.Context):
+            """ (<username>) """
+            await disp.solved_by(self.db, context)
+
         @update_challenges
         @self.bot.command(description='Return difference of solved challenges between two users.')
         async def diff(context: commands.context.Context):
