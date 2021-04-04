@@ -6,6 +6,7 @@ from discord.ext import commands
 from dotenv import load_dotenv
 
 import bot.display.embed as disp
+import nest_asyncio
 from bot.api.fetch import get_challenges
 from bot.colors import green, red
 from bot.constants import LANGS, FILENAME
@@ -72,6 +73,7 @@ class RootMeBot:
         @self.bot.command(description='Return challenges solved grouped by users for last day.')
         async def today(context: commands.context.Context):
             """ (<username>) """
+            print("hello")
             await disp.today(self.db, context)
 
         @self.bot.command(description='Return all challenges solved by a specific user.')
@@ -121,6 +123,7 @@ def init_rootme_challenges():
         challenges = challenges[0]
         rootme_challenges += list(challenges.values())
     rootme_challenges = sorted(rootme_challenges, key=lambda x: int(x['id_challenge']))
+    nest_asyncio.apply()
     return rootme_challenges
 
 

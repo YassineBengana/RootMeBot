@@ -130,24 +130,24 @@ async def display_solved_by(db: DatabaseManager, id_discord_server: int, name: s
         -> Tuple[Optional[str], Optional[str]]:
     """ Check if user exist in RootMe """
     all_users = await search_rootme_user(name)
+    tosend = {}
     
-    if all_users== 1 :
+    if len(all_users)== 1 :
         data = await search_rootme_user_challenges(name)
-        tosend = f'Score : {data["score"]}\n'
-        tosend += f"Classement : {data['ranking']}\n"
-        tosend += f"Rang : {data['rank']}\n"
-        tosend += f"Challenges résolus :\n"
-        for category_name, categories in data['challenges'].items() :
-            tosend += f"\t• {category_name}:\n"
-            for category in categories : 
-                tosend += f"\tFinie à {category['percentage']} ({category['completion']})\n"
-                tosend += f"\t{category['points']} Points \n"
-                tosend += f"\tChallenges :\n"
-                for challenge_name, challenge in categories['challenges'].items() :
-                    if challenge['completed'] :
-                        tosend += f"\t\t- {challenge_name} ({challenge['points']} points)\n"
+        tosend[f"What did {name} solve ?"] = f'Score : {data["score"]}\n'
+        tosend[f"What did {name} solve ?"] += f"Classement : {data['ranking']}\n"
+        tosend[f"What did {name} solve ?"] += f"Rang : {data['rank']}\n"
+        for category_name, category in data['challenges'].items() :
+            tosend[category_name] = ""
+            tosend[category_name] += f"\tFini à {category['percentage']} ({category['completion']})\n"
+            tosend[category_name] += f"\t{category['points']} Points \n"
+            tosend[category_name] += f"\tChallenges :\n"
+            for challenge_name, challenge in category['challenges'].items() :
+                if challenge['completed'] :
+                    tosend[category_name] += f"\t\t- {challenge_name} ({challenge['points']} points)\n"
     else :
         tosend = f"Problem with user {name}\n"
+        tosend += f"{all_users}"
     return tosend, name
     
 
