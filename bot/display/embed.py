@@ -135,6 +135,10 @@ async def week(db: DatabaseManager, context: Context) -> None:
 async def today(db: DatabaseManager, context: Context) -> None:
     await duration(db, context, duration_command='today', duration_msg='since last 24h')
 
+async def solved_by(db: DatabaseManager, context: Context) -> None:
+    username = ' '.join(context.message.content.strip().split(' ')[1:])
+    print(username)
+
 
 async def display_by_blocks_diff(channel: TextChannel, tosend_list: List[Dict[str, str]], color: int) -> None:
     for block in tosend_list:
