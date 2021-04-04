@@ -9,7 +9,7 @@ from discord.ext.commands.bot import Bot
 from discord.ext.commands.context import Context
 
 import bot.manage.channel_data as channel_data
-from bot.api.fetch import search_rootme_user, get_solved_challenges, get_diff, get_all_challenges
+from bot.api.fetch import search_rootme_user, get_solved_challenges, get_diff, get_all_challenges, search_rootme_user_challenges
 from bot.api.parser import Parser
 from bot.colors import green
 from bot.constants import LANGS, emoji2, emoji3, emoji5, limit_size, medals
@@ -125,6 +125,31 @@ async def display_who_solved(db: DatabaseManager, id_discord_server: int, challe
     if not tosend:
         tosend = f'Nobody solved "{rootme_challenge_selected["titre"]}".'
     return tosend, rootme_challenge_selected["titre"]
+
+async def display_solved_by(db: DatabaseManager, id_discord_server: int, name: str) \
+        -> Tuple[Optional[str], Optional[str]]:
+    """ Check if user exist in RootMe """
+    all_users = await search_rootme_user(name)
+    
+    if all_users== 1 :
+        data = await search_rootme_user_challenges(name)
+        tosend = f'Score : {data["score"]}\n'
+        tosend += f"Classement : {data['ranking']}\n"
+        tosend += f"Rang : {data['rank']}\n"
+        tosend += f"Challenges résolus :\n"
+        for category_name, categories in data['challenges'].items() :
+            tosend += f"\t• {category_name}:\n"
+            for category in categories : 
+                tosend += f"\tFinie à {category['percentage']} ({category['completion']})\n"
+                tosend += f"\t{category['points']} Points \n"
+                tosend += f"\tChallenges :\n"
+                for challenge_name, challenge in categories['challenges'].items() :
+                    if challenge['completed'] :
+                        tosend += f"\t\t- {challenge_name} ({challenge['points']} points)\n"
+    else :
+        tosend = f"Problem with user {name}\n"
+    return tosend, name
+    
 
 
 async def display_duration(db: DatabaseManager, context: Context, args: Tuple[str], delay: timedelta) \

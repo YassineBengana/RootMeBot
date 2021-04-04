@@ -136,8 +136,10 @@ async def today(db: DatabaseManager, context: Context) -> None:
     await duration(db, context, duration_command='today', duration_msg='since last 24h')
 
 async def solved_by(db: DatabaseManager, context: Context) -> None:
-    username = ' '.join(context.message.content.strip().split(' ')[1:])
-    print(username)
+    username = context.message.content.strip().split(' ')[1:]
+    tosend, username = await show.display_solved_by(db, context.guild.id, username)
+    embed_name = f"What did {username} solve ?"
+    await interrupt(context.message.channel, tosend, embed_color=0x29C1C5, embed_name=embed_name)
 
 
 async def display_by_blocks_diff(channel: TextChannel, tosend_list: List[Dict[str, str]], color: int) -> None:

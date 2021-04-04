@@ -5,6 +5,7 @@ from bot.api.parser import Parser, response_profile_complete
 from bot.colors import red
 from bot.constants import LANGS
 
+from requests_html import AsyncHTMLSession
 
 async def search_rootme_user_all_langs(username: str) -> List[Dict[str, str]]:
     all_users = []
@@ -15,6 +16,43 @@ async def search_rootme_user_all_langs(username: str) -> List[Dict[str, str]]:
         content = content[0]
         all_users += list(content.values())
     return all_users
+
+async def search_rootme_user_challenges(username: str) :
+    url = f"https://www.root-me.org/{username}?inc=score"
+
+    session = AsyncHTMLSession()
+
+    async def get_profile():
+        
+        r = await session.get(url)
+        data = {}
+        
+        data['score'] = r.html.xpath("/html/body/div[1]/div/div[2]/main/div/div/div/div/div[2]/div[1]/div[1]/span/text()")[0].split("\xa0")[0][1:]
+        data['ranking'] = r.html.xpath("/html/body/div[1]/div/div[2]/main/div/div/div/div/div[2]/div[1]/div[2]/span")[0].text
+        data['rank'] = r.html.xpath("/html/body/div[1]/div/div[2]/main/div/div/div/div/div[2]/div[1]/div[3]/span")[0].text
+        
+        categories_list = r.html.xpath("/html/body/div/div/div[2]/main/div/div/div/div/div[2]")[0].find("div")
+    
+        categories = {}
+    
+        for x in categories_list:
+            category = x.find('div')[0]
+            try : 
+                title = category.find('h4')[0].text.split('\n')[1]
+                categories[title] = {"percentage" : category.find('h4')[0].text.split('\n')[0]}
+                points, _, completion   = category.find("span")[1].text.split('\xa0')
+                categories[title]['points'] = points
+                categories[title]['completion'] = completion
+                categories[title]['challenges'] = {}
+                challenges = category.find("ul")[0].find('li')
+                for challenge in challenges : 
+                    categories[title]['challenges'][challenge.text[2:]] = {'completed' : True if challenge.text[0] == 'o' else False}
+                    categories[title]['challenges'][challenge.text[2:]]['points'] = challenge.find('a')[0].attrs['title'].split(' ')[0]
+            except : 
+                pass
+        data['challenges'] = categories
+        return data
+    return session.run(get_profile)[0]
 
 
 async def search_rootme_user(username: str) -> Optional[List]:
